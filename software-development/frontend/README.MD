@@ -52,3 +52,8 @@ Here is an overview of the key directories and files in the project:
 3. Edit the user name.
 
 4. Enjoy!
+
+
+----
+
+https://tailwindcss.com/docs/guides/create-react-app
