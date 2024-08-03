@@ -7,16 +7,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // Configure DbContext before building the app
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddDbContext<StudentContext>(options =>
-        options.UseInMemoryDatabase("Student"));
-}
-else
-{
-    builder.Services.AddDbContext<StudentContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("StudentContext") ?? throw new InvalidOperationException("Connection string 'StudentContext' not found.")));
-}
+// if (builder.Environment.IsDevelopment())
+// {
+//     builder.Services.AddDbContext<StudentContext>(options =>
+//         options.UseInMemoryDatabase("Student"));
+// }
+// else
+// {
+//     builder.Services.AddDbContext<StudentContext>(options =>
+//         options.UseSqlServer(builder.Configuration.GetConnectionString("PostgreDB") ?? throw new InvalidOperationException("Connection string 'PostgreDB' not found.")));
+// }
+var Configuration = builder.Configuration;
+builder.Services.AddDbContext<StudentContext>(options =>
+        options.UseNpgsql(Configuration.GetConnectionString("PostgreDB") ?? throw new InvalidOperationException("Connection string 'PostgreDB' not found.")));
+
 
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 
