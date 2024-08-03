@@ -65,6 +65,39 @@ namespace backend.Controllers
 
             return NoContent();
         }
+        // PUT: api/Students/5/photo_upload
+        [HttpPut("{id}/photo_upload")]
+        public async Task<IActionResult> PutStudentPhoto(long id, IFormFile File)
+        {
+            if (File == null || File.Length == 0)
+            {
+                return BadRequest("No file uploaded.");
+            }
+
+            // 1. Generate a unique file name
+            string fileName = Path.GetRandomFileName() + Path.GetExtension(File.FileName);
+
+            // 2. Determine the upload directory
+            string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+
+            // 3. Ensure the uploads folder exists
+            Directory.CreateDirectory(uploadsFolder);
+
+            // 4. Combine the uploads folder path with the unique file name
+            string filePath = Path.Combine(uploadsFolder, fileName);
+
+            // 5. Save the file
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await File.CopyToAsync(fileStream);
+            }
+
+            // 6. Save the file path to your database
+            string dbPath = Path.Combine("uploads", fileName);
+            await _repository.UploadPhotoAsync(id, dbPath);
+
+            return Ok(new { filePath = Path.Combine("uploads", fileName) });
+        }
 
         // POST: api/Students
         [HttpPost]

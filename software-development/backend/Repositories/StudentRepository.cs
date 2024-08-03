@@ -33,6 +33,13 @@ namespace Repositories
             _context.Entry(student).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
+        //for photo
+        public async Task UploadPhotoAsync(long id, string photopath)
+        {
+            var student = await _context.Student.FindAsync(id);
+            student.filepath = Path.Combine("uploads", photopath);
+            await _context.SaveChangesAsync();
+        }
 
         public async Task DeleteStudentAsync(long id)
         {

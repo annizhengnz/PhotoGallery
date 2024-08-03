@@ -11,5 +11,7 @@ namespace Repositories
         Task DeleteStudentAsync(long id);
         Task<bool> StudentExistsAsync(long id);
         Task BulkAddStudentsAsync(IEnumerable<Student> students);
+        // Task UpdateStudentPhotoAsync(long id, IFormFile photo);
+        Task UploadPhotoAsync(long id, string filePath);
     }
 }
