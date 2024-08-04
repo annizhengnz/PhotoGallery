@@ -1,201 +1,110 @@
-import React, { useState, useEffect } from "react";
-import "./App.css";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import {
-  CssBaseline,
-  Box,
-  Toolbar,
-  Typography,
-  IconButton,
-  ThemeProvider,
-  createTheme,
-  AppBar,
-  Button,
-  Container,
-} from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-
-import UploadPhotoFab from "./Components/UploadPhotoFab";
+import React, { useEffect, useState } from 'react';
+import { getImagesFromFolder } from "./Services/googleDrive";
+import { ModalProvider } from "./Context/ModalContext";
+import { SelectProvider} from "./Context/SelectContext";
+import { ImageType } from "./Types/types";
+import { getImageObject } from "./Utils/imageUpload";
+import './App.css';
 import PhotoGallery from "./Components/PhotoGallery";
+import EnlargedImageModal from "./Components/EnlargedImageModal";
+import AddImageFileInput from "./Components/AddImageFileInput";
+import LoadImagesButton from "./Components/LoadImagesButton";
+import SelectImagesButton from "./Components/SelectImagesButton";
+import DeleteImagesButton from "./Components/DeleteImagesButton";
+import AddImageFromUrlInput from "./Components/AddImageFromURLInput";
 
-import Sidebar from "./Components/Sidebar";
-import StudentDataGrid from "./Components/StudentDataGrid";
-import AddStudentForm from "./Components/AddStudentForm";
-import Settings from "./Components/Settings";
-import ExcelImport from "./Components/ExcelImport";
+function App() {
+  const folderId = process.env.REACT_APP_GOOGLE_DRIVE_FOLDER_ID || "";
+  const apiKey = process.env.REACT_APP_GOOGLE_DRIVE_API_KEY || "";
+  const pageSize = 24
 
-
-import { uploadImage,createImageID, getStudents, createStudent,deleteStudent } from "./Services/StudentService";
-import { Students } from "./Models/Students";
-import { SettingsProvider, useSettings } from "./Contexts/SettingsContext";
-
-import AddPhotoIcon from "@mui/icons-material/AddAPhoto";
-import Fab from "@mui/material/Fab";
-
-
-
-const drawerWidth = 240;
-
-const AppContent: React.FC = () => {
-  const [students, setStudents] = useState<Students[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-
-  const fetchStudents = async () => {
-    try {
-      const students = await getStudents();
-      setStudents(students);
-    } catch (err) {
-      setError("Failed to fetch students, check if server is running.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [nextPageToken, setNextPageToken] = useState<string | undefined>(undefined)
+  const [images, setImages] = useState<ImageType[]>([])
 
   useEffect(() => {
-    fetchStudents();
-  }, []);
-
-  const handleAddStudent = async (student: Omit<Students, "id">) => {
-    try {
-      const newStudent = await createStudent(student);
-      setStudents((prev) => [...prev, newStudent]);
-      setIsFormOpen(false);
-    } catch (err) {
-      setError("Failed to add student");
+    const fetchImages = async () => {
+      try {
+        if (folderId && apiKey) {
+          const imagesData = await getImagesFromFolder(folderId, apiKey, pageSize, nextPageToken);
+          setImages(imagesData?.files);
+          setNextPageToken(imagesData?.nextPageToken);
+        }
+      }
+      catch (error) {
+        console.error('Error fetching images:', error);
+      }
     }
-  };
 
-  const handleDataLoaded = (data: Students[]) => {
-    setStudents(data);
-  };
+    fetchImages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[folderId, apiKey]);
 
-  const { isDrawerOpen, toggleDrawer, isDarkTheme } = useSettings();
+  const loadMoreImages = async () => {
+    try {
+      if (folderId && apiKey) {
+        const imagesData = await getImagesFromFolder(folderId, apiKey, pageSize, nextPageToken);
+        setImages([...images, ...imagesData?.files]);
+        console.log(imagesData?.nextPageToken)
+        setNextPageToken(imagesData?.nextPageToken);
+      }
+    }
+    catch (error) {
+      console.error('Error fetching images:', error);
+    }
+  }
 
-  const theme = createTheme({
-    palette: {
-      mode: isDarkTheme ? "dark" : "light",
-      primary: {
-        main: "#5c2d91",
-      },
-    },
-  });
+  const newImagesHandler = async (files:File[]|string) => {
+    const newImages = [];
+    if (typeof files === "string") {
+      const imageObject = await getImageObject(files);
+      if (imageObject) {
+        newImages.push(imageObject);
+      }
+    }
+    else
+    for ( let i = 0; i < files.length; i++) {
+        const image = files[i];
+        const imageObject =  await getImageObject(image);
+        if (imageObject) {
+          newImages.push(imageObject);
+        }
+    }
+      setImages([...images,...newImages]);
+  }
+
+  const deleteImages = (indices:number|number[]) => {
+    if (typeof indices === "number") {
+      setImages(images.filter((image, i) => i !== indices));
+    }
+    else {
+      setImages(images.filter((image, i) => !indices.includes(i)));
+    }
+  }
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Box sx={{ display: "flex" }}>
-        <AppBar
-          position="fixed"
-          sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        >
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={toggleDrawer}
-              edge="start"
-              sx={{ mr: 2 }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" noWrap>
-              Student Portal
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <Sidebar />
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            width: { sm: `calc(100% - ${drawerWidth}px)` },
-            transition: (theme) =>
-              theme.transitions.create("margin", {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-              }),
-            ...(isDrawerOpen && {
-              marginLeft: 0,
-              transition: (theme) =>
-                theme.transitions.create("margin", {
-                  easing: theme.transitions.easing.easeOut,
-                  duration: theme.transitions.duration.enteringScreen,
-                }),
-            }),
-          }}
-        >
-          <Toolbar />
-          <Container>
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <>
-                    <Box mb={2}>
-                      <Typography variant="h4" gutterBottom>
-                        Student List
-                      </Typography>
-                      <Box display="flex" gap={2} mb={2}>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={() => setIsFormOpen(true)}
-                        >
-                          Add Student
-                        </Button>
-                        <ExcelImport onDataLoaded={handleDataLoaded} />
-                      </Box>
-                      <StudentDataGrid
-                        students={students}
-                        setStudents={setStudents}
-                        loading={loading}
-                        error={error}
-                      />
-                    </Box>
-                    <AddStudentForm
-                      open={isFormOpen}
-                      onClose={() => setIsFormOpen(false)}
-                      onAddStudent={handleAddStudent}
-                    />
-                  </>
-                }
-              />
-
-                  {/* <UploadPhotoFab
-                      open={isFormOpen}
-                      onClose={() => setIsFormOpen(false)}
-                      onAddPhoto={handleAddStudent}
-                    /> */}
-
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/gallery" element={<PhotoGallery />} />
-            </Routes>
-          </Container>
-        </Box>
-      </Box>
-    </ThemeProvider>
+        <div className="pb-8 px-2 flex flex-col justify-center">
+          <SelectProvider>
+            <h2 className="text-neutral-100 font-bold text-5xl md:text-6xl text-center mb-8">Photo Gallery</h2>
+            <div className="flex flex-row justify-center flex-wrap lg:gap-4">
+              <div className="flex flex-wrap justify-center items-center gap-4">
+                <AddImageFromUrlInput newImagesHandler={newImagesHandler}/>
+                <AddImageFileInput newImagesHandler={newImagesHandler}/>
+              </div>
+              <div className="flex justify-center items-center gap-4">
+                <SelectImagesButton/>
+                <DeleteImagesButton deleteImages={deleteImages}/>
+              </div>
+            </div>
+            <ModalProvider>
+                <PhotoGallery images={images} deleteImage={deleteImages}/>
+                <EnlargedImageModal/>
+            </ModalProvider>
+          </SelectProvider>
+          {
+            images?.length > 0 && nextPageToken ? <LoadImagesButton loadMoreImages={loadMoreImages}/> : null
+          }
+        </div>
   );
-};
-
-
-
-
-const App: React.FC = () => (
-  <SettingsProvider>
-    <Router>
-      {/* <AppContent /> */}
-      <PhotoGallery />
-
-    </Router>
-  </SettingsProvider>
-);
-
-
-
-
-
+}
 
 export default App;
