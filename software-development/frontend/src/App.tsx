@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getImagesFromFolder } from "./Services/googleDrive";
+import { getImagesFromFolder } from "./Services/CloudServiceConfig";
 import { ModalProvider } from "./Context/ModalContext";
 import { SelectProvider} from "./Context/SelectContext";
 import { ImageType } from "./Types/types";
