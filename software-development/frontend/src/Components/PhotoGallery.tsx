@@ -1,141 +1,20 @@
-import React, { useState, useEffect } from "react";
-import {
-    CssBaseline,
-    Box,
-    Toolbar,
-    Typography,
-    IconButton,
-    ThemeProvider,
-    createTheme,
-    AppBar,
-    Button,
-    Container,
-  } from "@mui/material";
-  import MenuIcon from "@mui/icons-material/Menu";
-
-  import { ImageList, ImageListItem, useMediaQuery, useTheme } from '@mui/material';
+import { useMemo } from "react";
+import ImageCard from "./ImageCard";
+import { ImageType, PhotoGalleryType } from "../Types/types";
 
 
+const PhotoGallery = ({images, deleteImage}:PhotoGalleryType) => {
 
+    const ImageCardsMemo = useMemo(() => (
+         images?.map((image: ImageType, index:number) => (
+            <ImageCard key={image.id} thumbnailLink={image.thumbnailLink} webContentLink={image.webContentLink} name={image.name} imageMediaMetadata={image.imageMediaMetadata} index={index} deleteImage={deleteImage}/>
+        ))), [images, deleteImage])
 
-  function srcset(image: string, size: number, rows = 1, cols = 1) {
-    return {
-      src: `${image}?w=${size * cols}&h=${size * rows}&fit=crop&auto=format`,
-      srcSet: `${image}?w=${size * cols}&h=${
-        size * rows
-      }&fit=crop&auto=format&dpr=2 2x`,
-    };
-  }
-const PhotoGallery: React.FC = () => {
-    const theme = useTheme();
-    const isXs = useMediaQuery(theme.breakpoints.only('xs'));
-    const isSm = useMediaQuery(theme.breakpoints.only('sm'));
-    const isMd = useMediaQuery(theme.breakpoints.only('md'));
-  
-    const getCols = () => {
-      if (isXs) return 2;
-      if (isSm) return 3;
-      if (isMd) return 4;
-      return 5; // For larger screens
-    };
-  
-    const getHeight = () => {
-      if (isXs) return 300;
-      if (isSm) return 400;
-      if (isMd) return 450;
-      return 500; // For larger screens
-    };
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh', // This ensures the box takes up at least the full viewport height
-        }}
-      >
-      <ImageList
-        sx={{           width: '90%', // Takes up 90% of the container width
-          maxWidth: '1200px', // Maximum width of the gallery
-          height: getHeight(), }}
-        variant="quilted"
-        cols={getCols()}
-        rowHeight={121}
-      >
-        {ImageData.map((item:any) => (
-          <ImageListItem key={item.img} cols={item.cols || 1} rows={item.rows || 1}>
-            <img
-              {...srcset(item.img, 121, item.rows, item.cols)}
-              alt={item.title}
-              loading="lazy"
-            />
-          </ImageListItem>
-        ))}
-      </ImageList>
-      </Box>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-8 gap-4 container md:max-w-2xl lg:max-w-7xl 2xl:max-w-fit mx-auto py-8 px-2 2xl:px-8">
+            {ImageCardsMemo}
+        </div>
     );
-  };
+};
 
-  const ImageData = [
-    {
-      img: 'https://images.unsplash.com/photo-1551963831-b3b1ca40c98e',
-      title: 'Breakfast',
-      rows: 2,
-      cols: 2,
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
-      title: 'Burger',
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1522770179533-24471fcdba45',
-      title: 'Camera',
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1444418776041-9c7e33cc5a9c',
-      title: 'Coffee',
-      cols: 2,
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1533827432537-70133748f5c8',
-      title: 'Hats',
-      cols: 2,
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62',
-      title: 'Honey',
-      author: '@arwinneil',
-      rows: 2,
-      cols: 2,
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1516802273409-68526ee1bdd6',
-      title: 'Basketball',
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1518756131217-31eb79b20e8f',
-      title: 'Fern',
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1597645587822-e99fa5d45d25',
-      title: 'Mushrooms',
-      rows: 2,
-      cols: 2,
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1567306301408-9b74779a11af',
-      title: 'Tomato basil',
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1',
-      title: 'Sea star',
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1589118949245-7d38baf380d6',
-      title: 'Bike',
-      cols: 2,
-    },
-  ];
-  
-
-  export default PhotoGallery;
+export default PhotoGallery;
