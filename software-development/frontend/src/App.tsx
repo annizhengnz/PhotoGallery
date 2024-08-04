@@ -14,14 +14,25 @@ import {
   Container,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+
+import UploadPhotoFab from "./Components/UploadPhotoFab";
+import PhotoGallery from "./Components/PhotoGallery";
+
 import Sidebar from "./Components/Sidebar";
 import StudentDataGrid from "./Components/StudentDataGrid";
 import AddStudentForm from "./Components/AddStudentForm";
 import Settings from "./Components/Settings";
 import ExcelImport from "./Components/ExcelImport";
-import { getStudents, createStudent } from "./Services/StudentService";
+
+
+import { uploadImage,createImageID, getStudents, createStudent,deleteStudent } from "./Services/StudentService";
 import { Students } from "./Models/Students";
 import { SettingsProvider, useSettings } from "./Contexts/SettingsContext";
+
+import AddPhotoIcon from "@mui/icons-material/AddAPhoto";
+import Fab from "@mui/material/Fab";
+
+
 
 const drawerWidth = 240;
 
@@ -152,7 +163,15 @@ const AppContent: React.FC = () => {
                   </>
                 }
               />
+
+                  {/* <UploadPhotoFab
+                      open={isFormOpen}
+                      onClose={() => setIsFormOpen(false)}
+                      onAddPhoto={handleAddStudent}
+                    /> */}
+
               <Route path="/settings" element={<Settings />} />
+              <Route path="/gallery" element={<PhotoGallery />} />
             </Routes>
           </Container>
         </Box>
@@ -161,12 +180,22 @@ const AppContent: React.FC = () => {
   );
 };
 
+
+
+
 const App: React.FC = () => (
   <SettingsProvider>
     <Router>
-      <AppContent />
+      {/* <AppContent /> */}
+      <PhotoGallery />
+
     </Router>
   </SettingsProvider>
 );
+
+
+
+
+
 
 export default App;
