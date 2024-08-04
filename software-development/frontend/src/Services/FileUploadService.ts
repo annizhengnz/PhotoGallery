@@ -1,5 +1,5 @@
 
-import {getStudents} from '../Services/StudentService';
+import {getStudents} from './StudentService';
  
 const upload = (file: File, onUploadProgress: any): Promise<any> => {
   let formData = new FormData();
