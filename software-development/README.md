@@ -1,7 +1,4 @@
-A Readme file containing the following information
-• Brief introduction to your project
-• One thing about your project you are very proud of
-• What basic & advanced features you’ve implemented
+
 
 # Introduction 
 
@@ -18,8 +15,15 @@ Although this project uses Local PostgreSQL to store photo info, the binary imag
 - Tailwind CSS
 - responsive UI
 - React Router
-- Git 
+- Git usage
 
+### Backend
+
+- Built using C# using .NET8
+- Usage of EFCore
+- Persists data using a PostgreSQL database.
+- Have at minimum CRUD operations.
+- Git usage
 
 # Advanced features
 - Storybook
